@@ -1,0 +1,33 @@
+[package]
+name = "lead_lag_hft"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tracing-subscriber = { version = "0.3.19" }
+tracing = { version = "0.1.41" }
+serde = { version = "1.0.219", features = ["derive"]}
+serde_json = { version = "1.0.140" }
+toml = { version = "0.8.20" }
+anyhow = { version = "1.0.98" }
+rand = { version = "0.9.1" }
+redis = { version = "0.30.0" }
+lazy_static = { version = "1.5.0" }
+async-trait = "0.1.88"
+influxdb = { version = "0.7.2", features = ["derive"] }
+tokio = "1.45.1"
+chrono = "0.4.41"
+
+[dependencies.bkbase]
+version = "0.1"
+features = []
+package = "bkbase"
+branch = "feature/gate-integration"
+git = "https://github.com/jinyixiang227/binquantkit.git"
+
+[dependencies.bklib]
+version = "0.1"
+features = []
+package = "bklib"
+branch = "feature/gate-integration"
+git = "https://github.com/jinyixiang227/binquantkit.git"
