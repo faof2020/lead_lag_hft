@@ -21,6 +21,12 @@ ak = "D9BC2821F6DE4592927292A90A255DA3"
 sk = "A02D1A4F4340285A5C64835C5038A3D847214313ABC015D6"
 user_id = "darkpool_sol_coinex4"
 
+[[ex_credential_configs]]
+exchange = "BINANCE"
+ak = "DL6apwao2aDww4m6Vi02j4qOfQ1BcrofjGHQq8qAT4Fllkf5KZjUvnaQA6km8Y35"
+sk = "I2MgwwjJo1vqT5L2sVLspd91ocyvZATyGUBpEzqcSAdrYmND6VW9aEoHR206uY5T"
+user_id = "darkpool_sol_binance4"
+
 [[strategy_config.offset_configs]]
 period = "5M"
 intval = 500

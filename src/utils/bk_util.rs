@@ -1,6 +1,7 @@
+use std::str::FromStr;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
-use bkbase::models::AssetVec;
+use bkbase::models::{Asset, AssetVec, Exchange};
 use bklib::legacy::{spawn_legacy_thread, BkLegacyClient};
 use bklib::legacy::handler::{BkLegacyDefaultHander, BkLegacyUserInfo};
 use anyhow::{anyhow, Result};
@@ -24,4 +25,15 @@ pub fn init_legacy(
         return Err(anyhow!("legacy module init failed"));
     }
     Ok((legacy_client, exit_signal))
+}
+
+pub fn get_default_exchange_asset(exchange: &Exchange) -> AssetVec {
+    let asset = if exchange.eq(&Exchange::BINANCE) {
+        Asset::from_str("BINANCE_SWAP_BTC-USDT").unwrap()
+    } else if exchange.eq(&Exchange::COINEXV2){
+        Asset::from_str("COINEXV2_SWAP_BTC-USDT").unwrap()
+    } else {
+        panic!("unsupported exchange: {:?}", exchange);
+    };
+    AssetVec::from_vec(vec![asset])
 }

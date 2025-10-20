@@ -10,6 +10,7 @@ use serde_json::json;
 use toml;
 use crate::calculator::delay_ema::DelayEmaConfig;
 use crate::calculator::spread_ema::SpreadEmaConfig;
+use crate::utils::bk_util::get_default_exchange_asset;
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct CredentialConfig {
@@ -81,14 +82,19 @@ where T: StrategyConfig
             uid_map.insert(exchange, credential.user_id.to_string());
         }
         let mut ret = vec![];
-        for (exchange, assets) in asset_group.iter() {
-            if credential_map.contains_key(exchange) && uid_map.contains_key(exchange) {
-                let credential = credential_map.get(exchange).unwrap();
+        for (exchange, credential) in credential_map.iter() {
+            if uid_map.contains_key(exchange) {
+                let uid = uid_map.get(exchange).unwrap();
+                let assets = if asset_group.contains_key(exchange) {
+                    AssetVec::from_vec(asset_group.get(exchange).unwrap().clone())
+                } else {
+                    get_default_exchange_asset(exchange)
+                };
                 ret.push(BkLegacyUserInfo {
                     exchange: exchange.clone(),
-                    assets: AssetVec::from_vec(assets.clone()),
+                    assets,
                     credential: credential.clone(),
-                    user_id: uid_map.get(exchange).unwrap().to_string(),
+                    user_id: uid.to_string(),
                 });
             }
         }
@@ -113,6 +119,9 @@ where T: StrategyConfig
             if asset_group.contains_key(&exchange) {
                 let assets = asset_group.get(&exchange).unwrap().clone();
                 ret.insert(credential.user_id.to_string(), AssetVec::from_vec(assets));
+            } else {
+                let assets = get_default_exchange_asset(&exchange);
+                ret.insert(credential.user_id.to_string(), assets);
             }
         }
         ret
