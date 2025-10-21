@@ -1,4 +1,4 @@
-instance_id = "coinex_no_hedge_taker"
+instance_id = "coinex_no_hedge_taker2"
 market_worker_id = "darkpool_sol"
 legacy_core_id = 5
 trading = true
@@ -17,15 +17,15 @@ intval = 500
 
 [[ex_credential_configs]]
 exchange = "COINEXV2"
-ak = "D9BC2821F6DE4592927292A90A255DA3"
-sk = "A02D1A4F4340285A5C64835C5038A3D847214313ABC015D6"
-user_id = "darkpool_sol_coinex4"
+ak = "D985C2E03EED475E96BD0F1B6C043E38"
+sk = "740FD8930C63A3868A79F6645E2063BC0CA018787BF40DF7"
+user_id = "darkpool_sol_coinex2"
 
 [[ex_credential_configs]]
 exchange = "BINANCE"
-ak = "DL6apwao2aDww4m6Vi02j4qOfQ1BcrofjGHQq8qAT4Fllkf5KZjUvnaQA6km8Y35"
-sk = "I2MgwwjJo1vqT5L2sVLspd91ocyvZATyGUBpEzqcSAdrYmND6VW9aEoHR206uY5T"
-user_id = "darkpool_sol_binance4"
+ak = "mRfC2TAXBg3oTCawB145CwfL9Fu4Nx2Rlt1u7QJwJH0oCyyaqKIxMfZ4m03YbVjd"
+sk = "U0MvVLm9oyGN6SGgoFZ8TT447n5G6VoCDvLdz8JJbKhTUYgI49TAS2EJGH1Ck5WD"
+user_id = "darkpool_sol_binance2"
 
 [[strategy_config.offset_configs]]
 period = "5M"
@@ -44,8 +44,8 @@ intval = 3000
 lead_max_delay = 100
 lag_max_delay = 500
 lead_max_expiration = 300
-report_measurement = "coinex_no_hedge_taker"
-order_report_measurement = "coinex_no_hedge_taker_order"
+report_measurement = "coinex_no_hedge_taker2"
+order_report_measurement = "coinex_no_hedge_taker_order2"
 
 
 [[strategy_config.trade_assets]]
@@ -54,7 +54,7 @@ lead_asset = "BINANCE_SWAP_BTC-USDT"
 trading = true
 pos_limit = 10
 pos_unit_usd = 200
-use_offset_period = "8H"
+use_offset_period = "5M"
 taker_threshold = 0
 bias_rate = 3e-5
 
@@ -65,7 +65,7 @@ lead_asset = "BINANCE_SWAP_ETH-USDT"
 trading = true
 pos_limit = 10
 pos_unit_usd = 200
-use_offset_period = "8H"
+use_offset_period = "5M"
 taker_threshold = 0
 bias_rate = 3e-5
 
@@ -76,7 +76,7 @@ lead_asset = "BINANCE_SWAP_XRP-USDT"
 trading = true
 pos_limit = 10
 pos_unit_usd = 100
-use_offset_period = "8H"
+use_offset_period = "5M"
 taker_threshold = 0
 bias_rate = 3e-5
 
@@ -87,7 +87,7 @@ lead_asset = "BINANCE_SWAP_SOL-USDT"
 trading = true
 pos_limit = 10
 pos_unit_usd = 100
-use_offset_period = "8H"
+use_offset_period = "5M"
 taker_threshold = 0
 bias_rate = 3e-5
 
@@ -98,7 +98,7 @@ lead_asset = "BINANCE_SWAP_DOGE-USDT"
 trading = true
 pos_limit = 10
 pos_unit_usd = 100
-use_offset_period = "8H"
+use_offset_period = "5M"
 taker_threshold = 0
 bias_rate = 3e-5
 
@@ -109,7 +109,7 @@ lead_asset = "BINANCE_SWAP_WIF-USDT"
 trading = true
 pos_limit = 10
 pos_unit_usd = 100
-use_offset_period = "8H"
+use_offset_period = "5M"
 taker_threshold = 0
 bias_rate = 3e-5
 
@@ -120,7 +120,7 @@ lead_asset = "BINANCE_SWAP_SUI-USDT"
 trading = true
 pos_limit = 10
 pos_unit_usd = 100
-use_offset_period = "8H"
+use_offset_period = "5M"
 taker_threshold = 0
 bias_rate = 3e-5
 
@@ -130,7 +130,7 @@ lead_asset = "BINANCE_SWAP_ADA-USDT"
 trading = true
 pos_limit = 10
 pos_unit_usd = 100
-use_offset_period = "8H"
+use_offset_period = "5M"
 taker_threshold = 0
 bias_rate = 3e-5
 
@@ -140,7 +140,7 @@ lead_asset = "BINANCE_SWAP_ZEC-USDT"
 trading = true
 pos_limit = 10
 pos_unit_usd = 100
-use_offset_period = "8H"
+use_offset_period = "5M"
 taker_threshold = 0
 bias_rate = 3e-5
 
@@ -150,7 +150,7 @@ lead_asset = "BINANCE_SWAP_ASTER-USDT"
 trading = true
 pos_limit = 10
 pos_unit_usd = 100
-use_offset_period = "8H"
+use_offset_period = "5M"
 taker_threshold = 0
 bias_rate = 3e-5
 
@@ -160,7 +160,7 @@ lead_asset = "BINANCE_SWAP_BNB-USDT"
 trading = true
 pos_limit = 10
 pos_unit_usd = 100
-use_offset_period = "8H"
+use_offset_period = "5M"
 taker_threshold = 0
 bias_rate = 3e-5
 
@@ -170,7 +170,7 @@ lead_asset = "BINANCE_SWAP_LINK-USDT"
 trading = true
 pos_limit = 10
 pos_unit_usd = 100
-use_offset_period = "8H"
+use_offset_period = "5M"
 taker_threshold = 0
 bias_rate = 3e-5
 
@@ -180,7 +180,7 @@ lead_asset = "BINANCE_SWAP_AVAX-USDT"
 trading = true
 pos_limit = 10
 pos_unit_usd = 100
-use_offset_period = "8H"
+use_offset_period = "5M"
 taker_threshold = 0
 bias_rate = 3e-5
 
@@ -190,7 +190,7 @@ lead_asset = "BINANCE_SWAP_DASH-USDT"
 trading = true
 pos_limit = 10
 pos_unit_usd = 100
-use_offset_period = "8H"
+use_offset_period = "5M"
 taker_threshold = 0
 bias_rate = 3e-5
 
@@ -200,6 +200,6 @@ lead_asset = "BINANCE_SWAP_AAVE-USDT"
 trading = true
 pos_limit = 10
 pos_unit_usd = 100
-use_offset_period = "8H"
+use_offset_period = "5M"
 taker_threshold = 0
 bias_rate = 3e-5

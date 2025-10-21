@@ -1,0 +1,26 @@
+#!/bin/bash
+
+export DISABLE_INIT_DATA_DELAY_ERROR=1
+export KUNLUN_PORT=1492
+
+while true
+do
+    pid=$(pgrep -f 'target/release/offset_taker shell/offset_taker2.toml')
+    if [ -n "$pid" ]; then
+        :
+    else
+        echo "offset_taker2 not running."
+        nohup target/release/offset_taker shell/offset_taker2.toml > logs/offset_taker2.log 2>&1 &
+    fi
+
+    pid=$(pgrep -f 'target/release/offset_taker shell/offset_taker2.toml')
+    core_id=$(taskset -p "$pid" | awk '{print $NF}')
+    echo "offset_taker2 pid: $pid, core mask: $core_id"
+    if [ "$core_id" = 80 ]; then
+        :
+    else
+        echo "offset_taker2 not bind core."
+        taskset -p -c 7 "$pid"
+    fi
+    sleep 10
+done
