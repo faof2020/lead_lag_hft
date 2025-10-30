@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::str::FromStr;
 use crate::offset_taker_strategy::offset_taker_config::OffsetTakerConfig;
 use crate::strategy::{Strategy, StrategyBehavior};
-use bkbase::models::Asset;
+use bkbase::models::{Asset, TradeData};
 use anyhow::{anyhow, Result};
 use bkbase::utils::time::now_ms;
 use serde_json::json;
@@ -162,6 +162,10 @@ impl StrategyBehavior<OffsetTakerConfig> for OffsetTakerStrategy {
         );
         self.report_measurement = base.config.strategy_config.report_measurement.to_string();
         self.report_order_measurement = base.config.strategy_config.order_report_measurement.to_string();
+        Ok(())
+    }
+
+    fn on_trade(&mut self, _strategy: &mut Strategy<OffsetTakerConfig>, _asset: Asset, _trades: Vec<TradeData>) -> Result<()> {
         Ok(())
     }
 

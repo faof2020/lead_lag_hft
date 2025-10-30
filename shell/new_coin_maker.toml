@@ -1,0 +1,67 @@
+instance_id = "binance_new_coin_maker"
+market_worker_id = "darkpool_sol"
+legacy_core_id = 5
+trading = true
+taker_fee = 2e-4
+maker_fee = -0.3e-4
+redis_url = "redis://127.0.0.1/"
+quote_intval = 100
+
+[spread_ema_config]
+period = "1M"
+intval = 500
+
+[delay_ema_config]
+period = "1M"
+intval = 500
+
+[[ex_credential_configs]]
+exchange = "BINANCE"
+ak = "DL6apwao2aDww4m6Vi02j4qOfQ1BcrofjGHQq8qAT4Fllkf5KZjUvnaQA6km8Y35"
+sk = "I2MgwwjJo1vqT5L2sVLspd91ocyvZATyGUBpEzqcSAdrYmND6VW9aEoHR206uY5T"
+user_id = "darkpool_sol_binance4"
+
+
+[[strategy_config.trade_assets]]
+asset = "BINANCE_SWAP_COMMON-USDT"
+trading = true
+tau_p = 10_000
+tau_o = 3600_000
+pos_unit_usd = 200
+pos_limit = 1
+sigma_multi = 3
+order_min_bps_diff = 2
+order_min_tick_diff = 2
+
+[[strategy_config.trade_assets]]
+asset = "BINANCE_SWAP_APR-USDT"
+trading = true
+tau_p = 10_000
+tau_o = 3600_000
+pos_unit_usd = 200
+pos_limit = 1
+sigma_multi = 3
+order_min_bps_diff = 2
+order_min_tick_diff = 2
+
+[[strategy_config.trade_assets]]
+asset = "BINANCE_SWAP_TURTLE-USDT"
+trading = true
+tau_p = 10_000
+tau_o = 3600_000
+pos_unit_usd = 200
+pos_limit = 1
+sigma_multi = 3
+order_min_bps_diff = 2
+order_min_tick_diff = 2
+
+[[strategy_config.trade_assets]]
+asset = "BINANCE_SWAP_BLUAI-USDT"
+trading = true
+tau_p = 10_000
+tau_o = 3600_000
+pos_unit_usd = 200
+pos_limit = 1
+sigma_multi = 3
+order_min_bps_diff = 2
+order_min_tick_diff = 2

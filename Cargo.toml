@@ -31,3 +31,10 @@ features = []
 package = "bklib"
 branch = "feature/gate-integration"
 git = "https://github.com/jinyixiang227/binquantkit.git"
+
+[dependencies.bkclient]
+version = "0.1"
+features = []
+package = "bkclient"
+branch = "feature/gate-integration"
+git = "https://github.com/jinyixiang227/binquantkit.git"

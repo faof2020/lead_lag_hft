@@ -1,11 +1,12 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
-use bkbase::models::{Asset, AssetType, AssetVec, Exchange};
+use bkbase::models::{Asset, AssetType, AssetVec, Exchange, TradeData};
 use bklib::market::{get_bkmarket_mut, get_bkmarket_ref, init_bk_market};
 use crate::common_config::*;
 use anyhow::{anyhow, Result};
 use bkbase::utils::time::now_ms;
+use bkclient::models::MarketUpdateData;
 use bklib::BkMarketClientConfig;
 use bklib::legacy::BkLegacyClient;
 use bklib::legacy::proto::{BkLegacyRequest, BkLegacyResponse};
@@ -15,9 +16,9 @@ use redis::{Client, Connection};
 use serde_json::Value;
 use crate::calculator::delay_ema::DelayEma;
 use crate::calculator::spread_ema::SpreadEma;
-use crate::utils::bk_util::init_legacy;
+use crate::utils::bk_util::{bk_get_trades, init_legacy};
 use crate::domains::common::Ticker;
-use crate::oms::{Oms, TakerContext};
+use crate::oms::{MakerContext, Oms, TakerContext};
 use crate::redis_reporter::RedisReporter;
 use crate::reporter::Reporter;
 use crate::utils::redis_util::{REDIS_DELAY_KET, REDIS_SPREAD_KET};
@@ -25,7 +26,7 @@ use crate::utils::redis_util::{REDIS_DELAY_KET, REDIS_SPREAD_KET};
 pub trait StrategyBehavior<T> {
     fn on_tick(&mut self, strategy: &mut Strategy<T>, asset: Asset) -> Result<()>;
     fn on_init(&mut self, strategy: &mut Strategy<T>) -> Result<()>;
-
+    fn on_trade(&mut self, strategy: &mut Strategy<T>, asset: Asset, trades: Vec<TradeData>) -> Result<()>;
     fn asset_max_pos_usd(&mut self, asset: Asset) -> Result<f64>;
 }
 
@@ -43,6 +44,7 @@ pub struct Strategy<T> {
     pub(crate) delay_map: HashMap<Asset, DelayEma>,
     pub(crate) oms_map: HashMap<Asset, Oms>,
     reporter: Reporter,
+    asset_last_id_map: HashMap<Asset, u64>,
 }
 
 impl<T> Strategy<T>
@@ -80,7 +82,8 @@ where T: StrategyConfig
             spread_map: HashMap::new(),
             delay_map: HashMap::new(),
             oms_map: HashMap::new(),
-            reporter: Reporter::new(&instance_id)
+            reporter: Reporter::new(&instance_id),
+            asset_last_id_map: HashMap::new(),
         }
     }
 
@@ -156,8 +159,25 @@ where T: StrategyConfig
                 tracing::warn!("legacy exit.");
                 return Ok(());
             }
-            if let Some((asset, _update)) = market_update {
+            if let Some((asset, update)) = market_update {
                 let now_ms = now_ms();
+                match update {
+                    MarketUpdateData::TRADE(_) => {
+                        let trade_last_id = if self.asset_last_id_map.contains_key(&asset) {
+                            *self.asset_last_id_map.get(&asset).unwrap()
+                        } else {
+                            0
+                        };
+                        let (trades, last_id) = bk_get_trades(&asset, trade_last_id);
+                        if last_id > trade_last_id {
+                            self.asset_last_id_map.insert(asset.clone(), last_id);
+                        }
+                        if let Err(e) = behavior.on_trade(self, asset, trades) {
+                            tracing::warn!("{:?}", e);
+                        }
+                    },
+                    _ => {}
+                }
                 self.reporter.report_global(&mut self.legacy_client, now_ms);
                 if !self.market_assets.contains(&asset) {
                     continue;
@@ -315,6 +335,22 @@ where T: StrategyConfig
         let order_ctx_rc = &mut op_ctx.order_ctx;
         let order_ctx = order_ctx_rc.borrow_mut();
         oms.do_taker(taker, order_ctx, &mut bk_private.client)
+    }
+
+    pub fn do_maker(&mut self, maker: MakerContext) -> Result<()> {
+        let asset = &maker.asset;
+        if !self.oms_map.contains_key(asset) {
+            return Err(anyhow!("get {:?} oms none.", asset));
+        }
+        let oms = self.oms_map.get_mut(asset).unwrap();
+        let bk_private = self.bk_privates.get_mut(&asset.exchange).unwrap();
+        let op_ctx = bk_private
+            .order_position_context
+            .get_mut(asset)
+            .unwrap();
+        let order_ctx_rc = &mut op_ctx.order_ctx;
+        let order_ctx = order_ctx_rc.borrow_mut();
+        oms.do_maker(maker, order_ctx, &mut bk_private.client)
     }
 
     pub fn batch_report_custom_data(&mut self, measurement: &str, asset: &Asset, data: HashMap<String, Value>) {

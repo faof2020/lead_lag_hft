@@ -8,3 +8,4 @@ pub mod offset_taker_strategy;
 mod oms;
 pub mod models;
 mod reporter;
+pub mod new_coin_maker;

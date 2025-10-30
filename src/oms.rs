@@ -17,18 +17,18 @@ pub struct TakerContext {
     pub now_ms: u64,
 }
 
-// #[derive(Debug, Clone)]
-// pub struct MakerContext {
-//     pub asset: Asset,
-//     pub price: f64,
-//     pub size: f64,
-//     pub is_post_only: bool,
-//     pub is_first: bool,
-//     pub max_order_num: usize,
-//     pub order_distance_threshold: f64,
-//     pub max_usd_pos: f64,
-//     pub now_ms: u64,
-// }
+#[derive(Debug, Clone)]
+pub struct MakerContext {
+    pub asset: Asset,
+    pub price: f64,
+    pub size: f64,
+    pub is_post_only: bool,
+    pub is_first: bool,
+    pub max_order_num: usize,
+    pub order_min_price_diff: f64,
+    pub max_usd_pos: f64,
+    pub now_ms: u64,
+}
 
 pub struct Oms {
     asset: Asset,
@@ -85,7 +85,7 @@ impl Oms {
     }
 
     pub fn position_check(&self, size: f64, max_usd_pos: f64) -> (bool, Vec<OrderID>) {
-        let usd_position = self.virtual_usd_position.unwrap();
+        let usd_position = self.current_usd_position.unwrap();
         let mut cancel_list = vec![];
         let mut should_post = true;
         // 如果仓位打满，对应方向全撤，并不再挂单
@@ -127,6 +127,76 @@ impl Oms {
             return false;
         }
         true
+    }
+
+    pub fn do_maker(
+        &mut self, maker: MakerContext,
+        mut order_ctx: RefMut<BkPrivateOrderContext>,
+        private_client: &mut BkPrivateClient,
+    ) -> Result<()> {
+        if !self.asset.eq(&maker.asset) {
+            return Err(anyhow!("oms: {:?} not match taker: {:?}", self.asset, maker.asset));
+        }
+        if !self.oms_is_ready() {
+            return Ok(());
+        }
+        let (should_post, cancel_list) = self.position_check(maker.size, maker.max_usd_pos);
+        for id in cancel_list {
+            let _ = order_ctx.cancel_order(id, BkPrivateOrderCancelPriority::Normal, private_client);
+        }
+        if !should_post {
+            return Ok(());
+        }
+        if !self.is_post_order_safe(&order_ctx, maker.now_ms) {
+            return Ok(())
+        }
+        if !maker.is_first && maker.max_order_num == 1 {
+            self.do_simple_only_one_maker(maker, order_ctx, private_client)?
+        } else {
+            tracing::warn!("not supported maker type: {:?}", maker);
+        }
+        Ok(())
+    }
+
+    fn find_near_order(&self, maker: &MakerContext) -> (bool, Vec<OrderID>) {
+        let mut should_post = true;
+        let mut to_cancel = vec![];
+        let open_orders = if maker.size > 0.0 {
+            &self.open_bids
+        } else {
+            &self.open_asks
+        };
+        for (oid, order) in open_orders.iter() {
+            if (order.price.unwrap() - maker.price).abs() > maker.order_min_price_diff {
+                to_cancel.push(oid.clone());
+            } else {
+                should_post = false;
+            }
+        }
+        (should_post, to_cancel)
+    }
+
+    pub fn do_simple_only_one_maker(
+        &mut self, maker: MakerContext,
+        mut order_ctx: RefMut<BkPrivateOrderContext>,
+        private_client: &mut BkPrivateClient,
+    ) -> Result<()> {
+        let (should_post, cancel_list) = self.find_near_order(&maker);
+        for id in cancel_list {
+            let _ = order_ctx.cancel_order(id, BkPrivateOrderCancelPriority::Normal, private_client);
+        }
+        if !should_post {
+            return Ok(());
+        }
+        let mut req = OrderRequest::new(self.asset.clone(), Some(maker.price), maker.size);
+        req.order_type = if maker.is_post_only {
+            OrderType::POST_ONLY
+        } else {
+            OrderType::GTC
+        };
+        order_ctx.post_order(req, private_client);
+        self.last_quote_ms = maker.now_ms;
+        Ok(())
     }
 
     pub fn do_taker(
