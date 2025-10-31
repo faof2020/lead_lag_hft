@@ -64,7 +64,19 @@ pub fn read_redis_delay(
     }
 }
 
-pub fn write_redis_batch(
+pub fn read_redis_key (
+    key: &str,
+    hmap_key: &str,
+    redis: &mut Connection,
+) -> Option<f64> {
+    let ret: RedisResult<f64> = redis.hget(hmap_key, key);
+    match ret {
+        Ok(v) => Some(v),
+        _ => None,
+    }
+}
+
+pub fn write_redis_batch (
     bucket: &str,
     data_map: HashMap<String, f64>,
     redis: &mut Connection,

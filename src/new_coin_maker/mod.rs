@@ -3,6 +3,7 @@ use std::str::FromStr;
 use bkbase::models::{Asset, TradeData};
 use anyhow::{anyhow, Result};
 use bkbase::utils::time::now_ms;
+use serde_json::json;
 use crate::models::basic_pricing::{BasicMaker, BasicMakerContext};
 use crate::new_coin_maker::new_coin_maker_config::NewCoinMakerConfig;
 use crate::new_coin_maker::new_coin_maker_model::NewCoinMakerModel;
@@ -17,6 +18,7 @@ pub struct NewCoinMakerStrategy {
     asset_pricing_map: HashMap<Asset, BasicMaker>,
     min_bps_diff_map: HashMap<Asset, f64>,
     min_tick_diff_map: HashMap<Asset, f64>,
+    report_measurement: String,
 }
 
 impl NewCoinMakerStrategy {
@@ -27,6 +29,7 @@ impl NewCoinMakerStrategy {
             asset_pricing_map: HashMap::new(),
             min_bps_diff_map: HashMap::new(),
             min_tick_diff_map: HashMap::new(),
+            report_measurement: "".to_string(),
         }
     }
 }
@@ -35,11 +38,21 @@ impl StrategyBehavior<NewCoinMakerConfig> for NewCoinMakerStrategy {
     fn on_tick(&mut self, base: &mut Strategy<NewCoinMakerConfig>, asset: Asset) -> Result<()> {
         let now_ms = now_ms();
         let ticker = base.ticker_map.get(&asset).unwrap().clone();
+        base.batch_report_custom_data(
+            &self.report_measurement,
+            &asset,
+            HashMap::from([("mid_price".to_string(), json!(ticker.mid_price()))]),
+        );
         let model = self.asset_model_map.get(&asset).unwrap();
         if !model.is_ready() {
             tracing::warn!("{:?} model is not ready.", asset);
             return Ok(());
         }
+        base.batch_report_custom_data(
+            &self.report_measurement,
+            &asset,
+            HashMap::from([("sigma".to_string(), json!(model.get_tema_sigma()))]),
+        );
         let (theo_ask, theo_bid) = model.get_quote_price();
         let position = base.get_asset_usd_position(&asset);
         if let Err(e) = &position {
@@ -88,7 +101,10 @@ impl StrategyBehavior<NewCoinMakerConfig> for NewCoinMakerStrategy {
     fn on_init(&mut self, base: &mut Strategy<NewCoinMakerConfig>) -> Result<()> {
         for asset_trade_config in base.config.strategy_config.trade_assets.iter() {
             let asset = Asset::from_str(&asset_trade_config.asset)?;
-            self.asset_model_map.insert(asset.clone(), NewCoinMakerModel::new(asset_trade_config));
+            self.asset_model_map.insert(
+                asset.clone(),
+                NewCoinMakerModel::new(asset_trade_config, base.redis_conn.as_mut())
+            );
             let max_pos_usd = asset_trade_config.pos_unit_usd * asset_trade_config.pos_limit;
             self.max_usd_pos_map.insert(asset.clone(), max_pos_usd);
             self.asset_pricing_map.insert(asset.clone(), BasicMaker::new(
@@ -97,16 +113,17 @@ impl StrategyBehavior<NewCoinMakerConfig> for NewCoinMakerStrategy {
             self.min_bps_diff_map.insert(asset.clone(), asset_trade_config.order_min_bps_diff);
             self.min_tick_diff_map.insert(asset.clone(), asset_trade_config.order_min_tick_diff);
         }
+        self.report_measurement = base.config.strategy_config.report_measurement.clone();
         Ok(())
     }
 
-    fn on_trade(&mut self, _base: &mut Strategy<NewCoinMakerConfig>, asset: Asset, trades: Vec<TradeData>) -> Result<()> {
+    fn on_trade(&mut self, base: &mut Strategy<NewCoinMakerConfig>, asset: Asset, trades: Vec<TradeData>) -> Result<()> {
         if !self.asset_model_map.contains_key(&asset) {
             tracing::warn!("get {:?} trades, not in config file.", asset);
         }
         let model = self.asset_model_map.get_mut(&asset).unwrap();
         for trade in trades.iter() {
-            model.update(trade);
+            model.update(trade, base.redis_reporter.as_mut());
         }
         Ok(())
     }

@@ -15,6 +15,9 @@ intval = 500
 period = "1M"
 intval = 500
 
+[strategy_config]
+report_measurement = "binance_new_coin_maker"
+
 [[ex_credential_configs]]
 exchange = "BINANCE"
 ak = "DL6apwao2aDww4m6Vi02j4qOfQ1BcrofjGHQq8qAT4Fllkf5KZjUvnaQA6km8Y35"
@@ -25,43 +28,47 @@ user_id = "darkpool_sol_binance4"
 [[strategy_config.trade_assets]]
 asset = "BINANCE_SWAP_COMMON-USDT"
 trading = true
-tau_p = 10_000
-tau_o = 3600_000
+tau_p = "10S"
+tau_o = "1H"
 pos_unit_usd = 200
 pos_limit = 1
 sigma_multi = 3
+sigma_min_bps = 10
 order_min_bps_diff = 2
 order_min_tick_diff = 2
 
 [[strategy_config.trade_assets]]
 asset = "BINANCE_SWAP_APR-USDT"
 trading = true
-tau_p = 10_000
-tau_o = 3600_000
+tau_p = "10S"
+tau_o = "1H"
 pos_unit_usd = 200
 pos_limit = 1
 sigma_multi = 3
+sigma_min_bps = 10
 order_min_bps_diff = 2
 order_min_tick_diff = 2
 
 [[strategy_config.trade_assets]]
 asset = "BINANCE_SWAP_TURTLE-USDT"
 trading = true
-tau_p = 10_000
-tau_o = 3600_000
+tau_p = "10S"
+tau_o = "1H"
 pos_unit_usd = 200
 pos_limit = 1
 sigma_multi = 3
+sigma_min_bps = 10
 order_min_bps_diff = 2
 order_min_tick_diff = 2
 
 [[strategy_config.trade_assets]]
 asset = "BINANCE_SWAP_BLUAI-USDT"
 trading = true
-tau_p = 10_000
-tau_o = 3600_000
+tau_p = "10S"
+tau_o = "1H"
 pos_unit_usd = 200
 pos_limit = 1
 sigma_multi = 3
+sigma_min_bps = 10
 order_min_bps_diff = 2
 order_min_tick_diff = 2

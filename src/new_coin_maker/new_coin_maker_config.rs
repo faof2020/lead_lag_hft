@@ -6,6 +6,7 @@ use crate::common_config::StrategyConfig;
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct NewCoinMakerConfig {
+    pub report_measurement: String,
     pub trade_assets: Vec<TradeAssetConfig>,
 }
 
@@ -13,11 +14,12 @@ pub struct NewCoinMakerConfig {
 pub struct TradeAssetConfig {
     pub asset: String,
     pub trading: bool,
-    pub tau_p: u64,
-    pub tau_o: u64,
+    pub tau_p: String,
+    pub tau_o: String,
     pub pos_unit_usd: f64,
     pub pos_limit: f64,
     pub sigma_multi: f64,
+    pub sigma_min_bps: f64,
     pub order_min_bps_diff: f64,
     pub order_min_tick_diff: f64,
 }

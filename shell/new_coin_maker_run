@@ -1,0 +1,26 @@
+#!/bin/bash
+
+export DISABLE_INIT_DATA_DELAY_ERROR=1
+export KUNLUN_PORT=1498
+
+while true
+do
+    pid=$(pgrep -f 'target/release/new_coin_maker shell/new_coin_maker.toml')
+    if [ -n "$pid" ]; then
+        :
+    else
+        echo "new_coin_maker not running."
+        nohup target/release/new_coin_maker shell/new_coin_maker.toml > logs/new_coin_maker.log 2>&1 &
+    fi
+
+    pid=$(pgrep -f 'target/release/new_coin_maker shell/new_coin_maker.toml')
+    core_id=$(taskset -p "$pid" | awk '{print $NF}')
+    echo "new_coin_maker pid: $pid, core mask: $core_id"
+    if [ "$core_id" = 2000 ]; then
+        :
+    else
+        echo "new_coin_maker not bind core."
+        taskset -p -c 13 "$pid"
+    fi
+    sleep 10
+done
